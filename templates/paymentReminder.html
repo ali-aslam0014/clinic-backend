@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Add your email styles here */
+    </style>
+</head>
+<body>
+    <h2>Payment Reminder</h2>
+    <p>Dear {{patientName}},</p>
+    <p>This is a friendly reminder that payment for Invoice #{{invoiceNumber}} is due on {{dueDate}}.</p>
+    <p>Outstanding Amount: ${{dueAmount}}</p>
+    <p>Please click the link below to view your invoice and make payment:</p>
+    <a href="{{paymentLink}}">View Invoice</a>
+    <p>If you have already made the payment, please disregard this reminder.</p>
+    <p>Thank you for your prompt attention to this matter.</p>
+</body>
+</html>
