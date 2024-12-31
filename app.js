@@ -41,6 +41,7 @@ const billingRoutes = require('./routes/billingRoutes');
 const communication = require('./routes/communicationRoutes');
 const pharmacyRoutes = require('./routes/pharmacyRoutes');
 const pharmacyProfileRoutes = require('./routes/pharmacyProfileRoutes');
+const systemLogs = require('./routes/systemLogs');
 
 const app = express();
 
@@ -94,6 +95,7 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/communication', communication);
 app.use('/api/v1/pharmacy', pharmacyRoutes);
 app.use('/api/pharmacy/profile', pharmacyProfileRoutes);
+app.use('/api/v1/admin/system-logs', systemLogs);
 
 // File Upload Middleware
 const fileUpload = require('express-fileupload');
