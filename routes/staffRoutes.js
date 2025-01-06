@@ -10,7 +10,13 @@ const {
   addPharmacist,
   updatePharmacist,
   deletePharmacist,
-  updatePharmacistDutyStatus
+  updatePharmacistDutyStatus,
+  getProfile,
+  updateProfile,
+  getSettings,
+  updateSettings,
+  changePassword,
+  uploadProfileImage
 } = require('../controllers/staffController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -38,5 +44,22 @@ router.route('/pharmacists/:id')
 
 router.route('/pharmacists/:id/duty-status')
   .patch(updatePharmacistDutyStatus);
+
+const profileRouter = express.Router();
+profileRouter.use(protect);
+
+profileRouter.route('/profile')
+  .get(getProfile)
+  .put(updateProfile);
+
+profileRouter.post('/profile/image', uploadProfileImage);
+
+profileRouter.route('/settings')
+  .get(getSettings)
+  .put(updateSettings);
+
+profileRouter.put('/change-password', changePassword);
+
+router.use('/staff', profileRouter);
 
 module.exports = router;

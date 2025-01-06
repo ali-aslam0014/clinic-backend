@@ -54,6 +54,50 @@ const staffSchema = new mongoose.Schema({
   isOnDuty: {
     type: Boolean,
     default: false
+  },
+  address: {
+    type: String,
+    default: ''
+  },
+  profileImage: {
+    type: String,
+    default: 'default.jpg'
+  },
+  settings: {
+    notifications: {
+      emailNotifications: {
+        type: Boolean,
+        default: true
+      },
+      smsNotifications: {
+        type: Boolean,
+        default: true
+      },
+      desktopNotifications: {
+        type: Boolean,
+        default: true
+      },
+      soundAlerts: {
+        type: Boolean,
+        default: true
+      }
+    },
+    display: {
+      theme: {
+        type: String,
+        enum: ['light', 'dark', 'system'],
+        default: 'system'
+      },
+      language: {
+        type: String,
+        enum: ['en', 'es', 'fr'],
+        default: 'en'
+      },
+      timezone: {
+        type: String,
+        default: 'UTC'
+      }
+    }
   }
 }, {
   timestamps: true

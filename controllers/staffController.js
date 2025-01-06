@@ -1,6 +1,7 @@
 const Staff = require('../models/staffModel');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const path = require('path');
 
 // @desc    Get all receptionists
 // @route   GET /api/v1/admin/staff/receptionists
@@ -230,5 +231,142 @@ exports.updatePharmacistDutyStatus = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: pharmacist
+  });
+});
+
+// @desc    Get staff profile
+// @route   GET /api/v1/staff/profile
+// @access  Private
+exports.getProfile = asyncHandler(async (req, res, next) => {
+  const staff = await Staff.findById(req.user.id).select('-password');
+
+  if (!staff) {
+    return next(new ErrorResponse('Staff not found', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: staff
+  });
+});
+
+// @desc    Update staff profile
+// @route   PUT /api/v1/staff/profile
+// @access  Private
+exports.updateProfile = asyncHandler(async (req, res, next) => {
+  const fieldsToUpdate = {
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone,
+    address: req.body.address
+  };
+
+  const staff = await Staff.findByIdAndUpdate(
+    req.user.id, 
+    fieldsToUpdate, 
+    {
+      new: true,
+      runValidators: true
+    }
+  ).select('-password');
+
+  res.status(200).json({
+    success: true,
+    data: staff
+  });
+});
+
+// @desc    Get staff settings
+// @route   GET /api/v1/staff/settings
+// @access  Private
+exports.getSettings = asyncHandler(async (req, res, next) => {
+  const staff = await Staff.findById(req.user.id).select('settings');
+
+  if (!staff) {
+    return next(new ErrorResponse('Staff not found', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: staff.settings
+  });
+});
+
+// @desc    Update staff settings
+// @route   PUT /api/v1/staff/settings
+// @access  Private
+exports.updateSettings = asyncHandler(async (req, res, next) => {
+  const staff = await Staff.findByIdAndUpdate(
+    req.user.id,
+    { settings: req.body },
+    {
+      new: true,
+      runValidators: true
+    }
+  ).select('settings');
+
+  res.status(200).json({
+    success: true,
+    data: staff.settings
+  });
+});
+
+// @desc    Change staff password
+// @route   PUT /api/v1/staff/change-password
+// @access  Private
+exports.changePassword = asyncHandler(async (req, res, next) => {
+  const staff = await Staff.findById(req.user.id).select('+password');
+
+  // Check current password
+  const isMatch = await staff.matchPassword(req.body.currentPassword);
+  if (!isMatch) {
+    return next(new ErrorResponse('Current password is incorrect', 401));
+  }
+
+  staff.password = req.body.newPassword;
+  await staff.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Password updated successfully'
+  });
+});
+
+// @desc    Upload profile image
+// @route   POST /api/v1/staff/profile/image
+// @access  Private
+exports.uploadProfileImage = asyncHandler(async (req, res, next) => {
+  if (!req.files) {
+    return next(new ErrorResponse('Please upload a file', 400));
+  }
+
+  const file = req.files.profileImage;
+
+  // Make sure the image is a photo
+  if (!file.mimetype.startsWith('image')) {
+    return next(new ErrorResponse('Please upload an image file', 400));
+  }
+
+  // Check filesize (max 2MB)
+  if (file.size > process.env.MAX_FILE_UPLOAD || file.size > 2000000) {
+    return next(new ErrorResponse('Please upload an image less than 2MB', 400));
+  }
+
+  // Create custom filename
+  file.name = `photo_${req.user.id}${path.parse(file.name).ext}`;
+
+  // Upload file
+  file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
+    if (err) {
+      console.error(err);
+      return next(new ErrorResponse('Problem with file upload', 500));
+    }
+
+    await Staff.findByIdAndUpdate(req.user.id, { profileImage: file.name });
+
+    res.status(200).json({
+      success: true,
+      data: file.name
+    });
   });
 });
